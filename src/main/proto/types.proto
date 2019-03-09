@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.skysoftatm.bblreactor.protobuf.types";
+option java_outer_classname = "DemoService";
+option java_generic_services = false;
+
+package demoService;
+
+service Demo{
+    rpc speed(Request) returns (stream Speed) {}
+    rpc altitude(Request) returns (stream Altitude) {}
+    rpc chat(stream Tweet)  returns (stream Tweet) {}
+}
+
+message Request{
+    string aircraftId = 1;
+}
+
+message Speed
+{
+    string aircraftId = 1;
+    double speed = 2;
+};
+
+
+message Altitude
+{
+    string aircraftId = 1;
+    double altitude = 2;
+}
+
+message Tweet{
+    string payload = 1;
+}
