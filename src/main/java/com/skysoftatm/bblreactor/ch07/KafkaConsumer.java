@@ -2,12 +2,12 @@ package com.skysoftatm.bblreactor.ch07;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.skysoftatm.bblreactor.protobuf.types.Tweet;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.apache.kafka.common.serialization.LongDeserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.util.Pair;
 import reactor.core.publisher.Flux;
 import reactor.kafka.receiver.KafkaReceiver;
 import reactor.kafka.receiver.ReceiverOffset;
@@ -26,7 +26,7 @@ public class KafkaConsumer {
 
     private final ReceiverOptions<Long, byte[]> receiverOptions;
 
-    public KafkaConsumer(String bootstrapServers) {
+    private KafkaConsumer(String bootstrapServers) {
 
         Map<String, Object> props = new HashMap<>();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
@@ -42,7 +42,7 @@ public class KafkaConsumer {
         KafkaConsumer consumer = new KafkaConsumer(BOOTSTRAP_SERVERS);
         Flux<ReceiverRecord<Long, byte[]>> msgFlux = consumer.consumeMessages(TOPIC);
         msgFlux
-                .map(record -> toTweet(record))
+                .map(KafkaConsumer::toTweet)
                 .doOnNext(KafkaConsumer::consumeTweet)
                 .blockLast();
     }
@@ -56,13 +56,13 @@ public class KafkaConsumer {
     }
 
     private static void consumeTweet(Pair<ReceiverOffset, Tweet> pair) {
-        Tweet tweet = pair.getSecond();
+        Tweet tweet = pair.getRight();
         long timeDiff = System.currentTimeMillis() - tweet.getTimestamp();
         System.out.println(tweet.getPayload() + " Processed in " + timeDiff + " ms");
-        pair.getFirst().acknowledge();
+        pair.getLeft().acknowledge();
     }
 
-    public Flux<ReceiverRecord<Long, byte[]>> consumeMessages(String topic) {
+    private Flux<ReceiverRecord<Long, byte[]>> consumeMessages(String topic) {
 
         ReceiverOptions<Long, byte[]> options = receiverOptions.subscription(Collections.singleton(topic))
                 .addAssignListener(partitions -> log.debug("onPartitionsAssigned {}", partitions))
