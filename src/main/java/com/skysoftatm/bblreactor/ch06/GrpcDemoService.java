@@ -34,6 +34,8 @@ public class GrpcDemoService extends ReactorDemoGrpc.DemoImplBase {
 
     @Override
     public Flux<Tweet> chat(Flux<Tweet> request) {
-        return request.map(i -> Tweet.newBuilder().setPayload("Hello "+i.getPayload()).build());
+        return request.map(i -> Tweet.newBuilder()
+                .setTimestamp(i.getTimestamp())
+                .setPayload("Hello " + i.getPayload()).build());
     }
 }

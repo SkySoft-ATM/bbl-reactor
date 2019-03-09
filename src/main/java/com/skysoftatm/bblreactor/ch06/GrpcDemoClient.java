@@ -39,7 +39,7 @@ public class GrpcDemoClient {
 
     // Bidirectional streaming
     private static Flux<Tweet> chat(Flux<String> input) {
-        Flux<Tweet> inputTweets = input.map(s -> Tweet.newBuilder().setPayload(s).build());
+        Flux<Tweet> inputTweets = input.map(s -> Tweet.newBuilder().setTimestamp(System.currentTimeMillis()).setPayload(s).build());
         return inputTweets.compose(GrpcRetry.ManyToMany.<Tweet, Tweet>retryImmediately(r -> createStub().chat(r)));
 
     }
@@ -48,12 +48,16 @@ public class GrpcDemoClient {
         getSpeedFor(FLIGHT).subscribe(System.out::println);
         getAltitudeFor(FLIGHT).doOnNext(System.out::println).blockLast();
 
-//        chat(Flux.interval(ofSeconds(1))
+//        chat(Flux.interval(ofMillis(10))
 //                .map(String::valueOf))
-//                .map(i -> i.getPayload())
+//                .map(i -> i.getPayload()+" - round trip in "+timeDifference(i)+" ms")
 //                .doOnNext(System.out::println)
 //                .blockLast();
 
+    }
+
+    private static long timeDifference(Tweet t) {
+        return System.currentTimeMillis() - t.getTimestamp();
     }
 
 }
