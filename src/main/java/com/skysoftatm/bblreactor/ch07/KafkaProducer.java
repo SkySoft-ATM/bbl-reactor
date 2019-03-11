@@ -27,7 +27,6 @@ class KafkaProducer {
     private final KafkaSender<Long, byte[]> sender;
 
     KafkaProducer(String bootstrapServers) {
-
         Map<String, Object> props = new HashMap<>();
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         props.put(ProducerConfig.CLIENT_ID_CONFIG, "sample-producer");

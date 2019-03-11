@@ -47,6 +47,14 @@ public class KafkaConsumer {
                 .blockLast();
     }
 
+    private Flux<ReceiverRecord<Long, byte[]>> consumeMessages(String topic) {
+
+        ReceiverOptions<Long, byte[]> options = receiverOptions.subscription(Collections.singleton(topic))
+                .addAssignListener(partitions -> log.debug("onPartitionsAssigned {}", partitions))
+                .addRevokeListener(partitions -> log.debug("onPartitionsRevoked {}", partitions));
+        return KafkaReceiver.create(options).receive();
+    }
+
     private static Pair<ReceiverOffset, Tweet> toTweet(ReceiverRecord<Long, byte[]> record) {
         try {
             return Pair.of(record.receiverOffset(), Tweet.parseFrom(record.value()));
@@ -62,11 +70,5 @@ public class KafkaConsumer {
         pair.getLeft().acknowledge();
     }
 
-    private Flux<ReceiverRecord<Long, byte[]>> consumeMessages(String topic) {
 
-        ReceiverOptions<Long, byte[]> options = receiverOptions.subscription(Collections.singleton(topic))
-                .addAssignListener(partitions -> log.debug("onPartitionsAssigned {}", partitions))
-                .addRevokeListener(partitions -> log.debug("onPartitionsRevoked {}", partitions));
-        return KafkaReceiver.create(options).receive();
-    }
 }

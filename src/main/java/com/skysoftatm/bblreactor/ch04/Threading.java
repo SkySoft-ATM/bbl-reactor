@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.scheduler.Schedulers;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 public class Threading {
@@ -14,7 +15,8 @@ public class Threading {
     public static void main(String[] args) {
         Flux<Long> source = Flux.create(sink -> {
             long i = 0;
-                while(!sink.isCancelled()){
+            mainLoop:
+            while (!sink.isCancelled()) {
                     while(!sink.isCancelled() && sink.requestedFromDownstream() > 0){
                         sink.next(i);
                         LOGGER.info("Produced {}", i);
@@ -22,8 +24,16 @@ public class Threading {
                         try {
                             SECONDS.sleep(1);
                         } catch (InterruptedException e) {
-                            break;
+                            Thread.currentThread().interrupt();
+                            break mainLoop;
                         }
+                    }
+                try {
+                    //wait for requests
+                    MILLISECONDS.sleep(10);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
                     }
                 }
         });
