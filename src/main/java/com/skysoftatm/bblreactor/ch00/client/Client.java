@@ -12,8 +12,18 @@ public class Client {
 
     public static void main(String[] args) {
         Flux<Speed> speedFlux = getSpeed(FLIGHT);
+
+        //Try with this code alternatives to average the speed values
+
+//    Flux<Speed> speedFlux = getSpeed(FLIGHT).buffer(100)
+//                .map(l -> l.stream().mapToDouble(Speed::getSpeed).average())
+//            .map(s -> new Speed(s.getAsDouble()));
+
         Flux<Altitude> altitudeFlux = getAltitude(FLIGHT);
         Flux<String> infoFlux = Flux.combineLatest(Client::combineValues, speedFlux, altitudeFlux);
+
+        // only the altitude values will be a trigger
+        // Flux<String> infoFlux = altitudeFlux.withLatestFrom(speedFlux, (a, s) -> a + " " + s);
 
         infoFlux.doOnNext(System.out::println).blockLast();
     }
@@ -38,22 +48,4 @@ public class Client {
                 .exchange()
                 .flatMapMany(cr -> cr.bodyToFlux(Altitude.class));
     }
-
-
-
-
-
-
-
-
-
-
-
-
-//    .buffer(100)
-//                .map(l -> l.stream().mapToDouble(Speed::getSpeed).average())
-//            .map(s -> new Speed(s.getAsDouble()));
-
-
-    // altitudeFlux.withLatestFrom(speedFlux, (a, s) -> a + " " + s).doOnNext(System.out::println).blockLast();
 }
