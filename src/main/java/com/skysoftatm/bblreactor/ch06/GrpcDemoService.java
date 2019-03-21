@@ -16,6 +16,7 @@ public class GrpcDemoService extends ReactorDemoGrpc.DemoImplBase {
 
     @Override
     public Flux<Speed> speed(Mono<Request> request) {
+        System.out.println("received speed request");
         return request.flatMapMany(r -> Flux.interval(Duration.ofSeconds(1))
                 .map(i -> Speed.newBuilder()
                         .setAircraftId(r.getAircraftId())
@@ -25,6 +26,7 @@ public class GrpcDemoService extends ReactorDemoGrpc.DemoImplBase {
 
     @Override
     public Flux<Altitude> altitude(Mono<Request> request) {
+        System.out.println("received altitude request");
         return request.flatMapMany(r -> Flux.interval(Duration.ofSeconds(1))
                 .map(i -> Altitude.newBuilder()
                         .setAircraftId(r.getAircraftId())
@@ -34,6 +36,7 @@ public class GrpcDemoService extends ReactorDemoGrpc.DemoImplBase {
 
     @Override
     public Flux<Tweet> chat(Flux<Tweet> request) {
+        System.out.println("received chat request");
         return request.map(i -> Tweet.newBuilder()
                 .setTimestamp(i.getTimestamp())
                 .setPayload("Hello " + i.getPayload()).build());
